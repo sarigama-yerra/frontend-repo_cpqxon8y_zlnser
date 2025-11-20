@@ -1,10 +1,25 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import { Hero, WhatWeDo, Benefits, Testimonials, CTA, ServicesPage, PricesPage, AboutPage, PortfolioPage, BlogPage, ContactPage } from './components/Sections'
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+
+function Page({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="min-h-[60vh]"
+    >
+      {children}
+    </motion.div>
+  )
+}
 
 function Home() {
   const [testimonials, setTestimonials] = useState([])
@@ -54,7 +69,7 @@ function Contact() {
         body: JSON.stringify(payload)
       })
       if (!res.ok) throw new Error('Failed')
-      const data = await res.json()
+      await res.json()
       setStatus('✅ Bedankt! We nemen snel contact op.')
       e.currentTarget.reset()
     } catch (e) {
@@ -73,19 +88,59 @@ function Contact() {
 }
 
 export default function App() {
+  const location = useLocation()
+
+  useEffect(() => {
+    // Smooth scroll to top on route change
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [location.pathname])
+
   return (
     <div className="min-h-screen bg-blue-950 text-blue-100">
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/over" element={<AboutPage />} />
-        <Route path="/diensten" element={<ServicesPage />} />
-        <Route path="/prijzen" element={<PricesPage />} />
-        <Route path="/portfolio" element={<PortfolioPage />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/contact" element={<Contact />} />
-      </Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Page><Home /></Page>} />
+          <Route path="/over" element={<Page><AboutPage /></Page>} />
+          <Route path="/diensten" element={<Page><ServicesPage /></Page>} />
+          <Route path="/prijzen" element={<Page><PricesPage /></Page>} />
+          <Route path="/portfolio" element={<Page><PortfolioPage /></Page>} />
+          <Route path="/blog" element={<Page><Blog /></Page>} />
+          <Route path="/contact" element={<Page><Contact /></Page>} />
+        </Routes>
+      </AnimatePresence>
+
+      {/* Floating back-to-top button */}
+      <BackToTop />
+
       <Footer />
     </div>
+  )
+}
+
+function BackToTop() {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 400)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 right-6 z-50 rounded-full bg-amber-400 text-blue-900 font-bold px-4 py-3 shadow-lg hover:bg-amber-300"
+          aria-label="Terug naar boven"
+        >
+          ↑ Boven
+        </motion.button>
+      )}
+    </AnimatePresence>
   )
 }
