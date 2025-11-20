@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { CheckCircle, LineChart, Shield, Rocket, Wrench, Search, Calendar } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -347,12 +348,52 @@ export function ContactPage({ onSubmit }) {
 }
 
 export function AppointmentPage({ onSubmit, busySlots = [] }) {
+  const [date, setDate] = useState('')
+  const [dateError, setDateError] = useState('')
+
+  // Generate dropdown start times between 10:00 and 16:30 inclusive (30-min slots)
+  const timeOptions = useMemo(() => {
+    const options = []
+    for (let h = 10; h <= 16; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const hh = String(h).padStart(2, '0')
+        const mm = String(m).padStart(2, '0')
+        options.push(`${hh}:${mm}`)
+      }
+    }
+    return options
+  }, [])
+
+  const onDateChange = (e) => {
+    const value = e.target.value // YYYY-MM-DD
+    setDateError('')
+    if (!value) { setDate(value); return }
+    const d = new Date(value + 'T12:00:00') // noon to avoid TZ issues
+    const day = d.getUTCDay() // 0 Sun .. 6 Sat
+    if (day === 0 || day === 6) {
+      setDateError('Weekend is niet beschikbaar. Kies een werkdag (ma–vr).')
+      setDate('')
+      e.target.value = ''
+      return
+    }
+    setDate(value)
+  }
+
+  // Today min date
+  const today = useMemo(() => {
+    const d = new Date()
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }, [])
+
   return (
     <div className="bg-blue-950 min-h-screen text-blue-100">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h1 className="text-4xl font-bold text-white mb-2">Plan een afspraak</h1>
         <p className="text-blue-200/90 mb-4">Beschikbaar: maandag t/m vrijdag, 10:00–17:00. Afspraken duren 30 minuten met 15 minuten buffer. Maximaal 2 gelijktijdige afspraken.</p>
-        <p className="text-blue-300 text-sm mb-8">Tip: kies een starttijd op het halve uur (bijv. 10:00, 10:30, 11:00).</p>
+        <p className="text-blue-300 text-sm mb-8">Kies een datum uit de kalender en een starttijd uit de lijst.</p>
 
         <form onSubmit={onSubmit} className="grid grid-cols-1 gap-5">
           <div className="grid md:grid-cols-2 gap-5">
@@ -364,11 +405,17 @@ export function AppointmentPage({ onSubmit, busySlots = [] }) {
           <div className="grid md:grid-cols-3 gap-5">
             <div>
               <label className="block text-sm text-blue-300 mb-1">Datum</label>
-              <motion.input whileFocus={{ scale: 1.01 }} type="date" name="date" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white" required />
+              <motion.input whileFocus={{ scale: 1.01 }} type="date" name="date" min={today} onChange={onDateChange} className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white" required />
+              {dateError && <p className="text-red-400 text-xs mt-1">{dateError}</p>}
             </div>
             <div>
               <label className="block text-sm text-blue-300 mb-1">Starttijd</label>
-              <motion.input whileFocus={{ scale: 1.01 }} type="time" name="time" min="10:00" max="17:00" step="1800" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white" required />
+              <select name="time" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white" required>
+                <option value="" disabled selected>Kies tijd</option>
+                {timeOptions.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm text-blue-300 mb-1">Duur</label>
