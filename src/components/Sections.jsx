@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle, LineChart, Shield, Rocket, Wrench, Search } from 'lucide-react'
+import { CheckCircle, LineChart, Shield, Rocket, Wrench, Search, Calendar } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const fadeUp = {
@@ -38,7 +38,9 @@ export function Hero() {
             Website Koning bouwt snelle, betaalbare en conversiegerichte sites voor lokale MKB-ondernemers.
           </motion.p>
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3">
-            <a href="#contact" className="inline-flex items-center justify-center px-6 py-3 rounded-md bg-amber-400 text-blue-900 font-bold hover:bg-amber-300 transition-colors">Plan een afspraak</a>
+            <Link to="/afspraak" className="inline-flex items-center justify-center px-6 py-3 rounded-md bg-amber-400 text-blue-900 font-bold hover:bg-amber-300 transition-colors">
+              Plan een afspraak
+            </Link>
             <Link to="/diensten" className="inline-flex items-center justify-center px-6 py-3 rounded-md bg-white/10 hover:bg-white/20 font-semibold">
               Bekijk diensten
             </Link>
@@ -162,7 +164,11 @@ export function CTA() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
         <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-3xl font-bold mb-4">Klaar voor meer leads?</motion.h2>
         <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.1, duration: 0.5 }} className="text-blue-100 mb-6">Plan een vrijblijvende call van 15 minuten. We denken graag mee.</motion.p>
-        <motion.a whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} href="/contact" className="inline-flex items-center justify-center px-6 py-3 rounded-md bg-amber-400 text-blue-900 font-bold hover:bg-amber-300 transition-colors">Plan een afspraak</motion.a>
+        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+          <Link to="/afspraak" className="inline-flex items-center justify-center px-6 py-3 rounded-md bg-amber-400 text-blue-900 font-bold hover:bg-amber-300 transition-colors">
+            <Calendar className="mr-2" size={18} /> Plan een afspraak
+          </Link>
+        </motion.div>
       </div>
     </section>
   )
@@ -192,7 +198,7 @@ export function ServicesPage() {
                   <li key={b} className="flex items-center gap-2"><CheckCircle className="text-amber-300" size={16} /> {b}</li>
                 ))}
               </ul>
-              <a href="/contact" className="inline-block mt-4 text-amber-300 hover:text-amber-200 font-semibold">Plan een call →</a>
+              <Link to="/afspraak" className="inline-block mt-4 text-amber-300 hover:text-amber-200 font-semibold">Plan een call →</Link>
             </motion.div>
           ))}
         </div>
@@ -229,7 +235,7 @@ export function PricesPage() {
               <ul className="mt-4 space-y-2 text-sm">
                 {p.features.map(f => <li key={f} className="flex items-center gap-2"><CheckCircle className="text-amber-300" size={16} /> {f}</li>)}
               </ul>
-              <a href="/contact" className="inline-block mt-5 w-full text-center bg-amber-400 text-blue-900 font-bold py-2 rounded hover:bg-amber-300">Start nu</a>
+              <Link to="/afspraak" className="inline-block mt-5 w-full text-center bg-amber-400 text-blue-900 font-bold py-2 rounded hover:bg-amber-300">Start nu</Link>
             </motion.div>
           ))}
         </div>
@@ -334,6 +340,61 @@ export function ContactPage({ onSubmit }) {
             <input type="checkbox" name="consent" defaultChecked className="accent-amber-400" /> Ik geef toestemming om benaderd te worden.
           </label>
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="md:col-span-2 bg-amber-400 text-blue-900 font-bold py-3 rounded hover:bg-amber-300">Versturen</motion.button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+export function AppointmentPage({ onSubmit, busySlots = [] }) {
+  return (
+    <div className="bg-blue-950 min-h-screen text-blue-100">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h1 className="text-4xl font-bold text-white mb-2">Plan een afspraak</h1>
+        <p className="text-blue-200/90 mb-8">Kies een dag en tijd. We plannen een videocall van 15–30 minuten. Je ontvangt direct een bevestiging per e-mail.</p>
+
+        <form onSubmit={onSubmit} className="grid grid-cols-1 gap-5">
+          <div className="grid md:grid-cols-2 gap-5">
+            <motion.input whileFocus={{ scale: 1.01 }} name="name" placeholder="Naam" className="px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white placeholder-blue-300" required />
+            <motion.input whileFocus={{ scale: 1.01 }} type="email" name="email" placeholder="E-mail" className="px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white placeholder-blue-300" required />
+          </div>
+          <motion.input whileFocus={{ scale: 1.01 }} name="phone" placeholder="Telefoon (optioneel)" className="px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white placeholder-blue-300" />
+
+          <div className="grid md:grid-cols-3 gap-5">
+            <div>
+              <label className="block text-sm text-blue-300 mb-1">Datum</label>
+              <motion.input whileFocus={{ scale: 1.01 }} type="date" name="date" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white" required />
+            </div>
+            <div>
+              <label className="block text-sm text-blue-300 mb-1">Starttijd</label>
+              <motion.input whileFocus={{ scale: 1.01 }} type="time" name="time" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white" required />
+            </div>
+            <div>
+              <label className="block text-sm text-blue-300 mb-1">Duur</label>
+              <select name="duration" defaultValue="30" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white">
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="45">45 min</option>
+              </select>
+            </div>
+          </div>
+
+          <motion.textarea whileFocus={{ scale: 1.01 }} name="note" placeholder="Notities (optioneel)" rows="4" className="px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white placeholder-blue-300" />
+
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="bg-amber-400 text-blue-900 font-bold py-3 rounded hover:bg-amber-300 flex items-center justify-center gap-2">
+            <Calendar size={18} /> Bevestig afspraak
+          </motion.button>
+
+          {busySlots.length > 0 && (
+            <div className="text-sm text-blue-300">
+              <p className="font-semibold text-white mb-2">Niet-beschikbare tijden:</p>
+              <ul className="list-disc ml-5 space-y-1">
+                {busySlots.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </form>
       </div>
     </div>

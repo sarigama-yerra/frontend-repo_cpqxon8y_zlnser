@@ -3,7 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-import { Hero, WhatWeDo, Benefits, Testimonials, CTA, ServicesPage, PricesPage, AboutPage, PortfolioPage, BlogPage, ContactPage } from './components/Sections'
+import { Hero, WhatWeDo, Benefits, Testimonials, CTA, ServicesPage, PricesPage, AboutPage, PortfolioPage, BlogPage, ContactPage, AppointmentPage } from './components/Sections'
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
@@ -87,6 +87,73 @@ function Contact() {
   )
 }
 
+function Appointment() {
+  const [status, setStatus] = useState(null)
+  const [busy, setBusy] = useState([])
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/appointments`).then(r => r.json()).then((list) => {
+      const items = list.map(a => {
+        const start = new Date(a.start)
+        const end = new Date(a.end)
+        return `${start.toLocaleString()} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+      })
+      setBusy(items)
+    }).catch(() => {})
+  }, [])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const form = new FormData(e.currentTarget)
+
+    // Build ISO datetimes from date + time + duration
+    const date = form.get('date') // YYYY-MM-DD
+    const time = form.get('time') // HH:MM
+    const durationMin = parseInt(form.get('duration') || '30', 10)
+
+    // Assume local time; convert to ISO string
+    const startLocal = new Date(`${date}T${time}`)
+    const endLocal = new Date(startLocal.getTime() + durationMin * 60000)
+
+    const payload = {
+      name: form.get('name'),
+      email: form.get('email'),
+      phone: form.get('phone') || undefined,
+      start: startLocal.toISOString(),
+      end: endLocal.toISOString(),
+      note: form.get('note') || undefined,
+      source: 'website'
+    }
+
+    setStatus('Plaatst afspraak...')
+    try {
+      const res = await fetch(`${API_BASE}/api/appointments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      if (res.status === 409) {
+        setStatus('❌ Dit tijdslot is al bezet. Kies een andere tijd.')
+        return
+      }
+
+      if (!res.ok) throw new Error('Failed')
+      await res.json()
+      setStatus('✅ Afspraak bevestigd! Je ontvangt een bevestiging per e-mail.')
+      e.currentTarget.reset()
+    } catch (e) {
+      setStatus('❌ Er ging iets mis. Probeer het opnieuw.')
+    }
+  }
+
+  return (
+    <>
+      {status && <div className="bg-blue-900 text-white text-center py-2">{status}</div>}
+      <AppointmentPage onSubmit={handleSubmit} busySlots={busy} />
+    </>
+  )}
+
 export default function App() {
   const location = useLocation()
 
@@ -107,6 +174,7 @@ export default function App() {
           <Route path="/portfolio" element={<Page><PortfolioPage /></Page>} />
           <Route path="/blog" element={<Page><Blog /></Page>} />
           <Route path="/contact" element={<Page><Contact /></Page>} />
+          <Route path="/afspraak" element={<Page><Appointment /></Page>} />
         </Routes>
       </AnimatePresence>
 
