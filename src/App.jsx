@@ -106,19 +106,18 @@ function Appointment() {
     e.preventDefault()
     const form = new FormData(e.currentTarget)
 
-    // Build ISO datetimes from date + time + duration
+    // Build ISO datetimes from date + time; duration fixed to 30 min
     const date = form.get('date') // YYYY-MM-DD
     const time = form.get('time') // HH:MM
-    const durationMin = parseInt(form.get('duration') || '30', 10)
 
-    // Assume local time; convert to ISO string
+    // Local time to ISO
     const startLocal = new Date(`${date}T${time}`)
-    const endLocal = new Date(startLocal.getTime() + durationMin * 60000)
+    const endLocal = new Date(startLocal.getTime() + 30 * 60000)
 
     const payload = {
       name: form.get('name'),
       email: form.get('email'),
-      phone: form.get('phone') || undefined,
+      phone: form.get('phone'),
       start: startLocal.toISOString(),
       end: endLocal.toISOString(),
       note: form.get('note') || undefined,
@@ -134,14 +133,23 @@ function Appointment() {
       })
 
       if (res.status === 409) {
-        setStatus('❌ Dit tijdslot is al bezet. Kies een andere tijd.')
+        setStatus('❌ Dit tijdslot zit vol (met buffer). Kies een ander moment.')
         return
       }
 
       if (!res.ok) throw new Error('Failed')
       await res.json()
-      setStatus('✅ Afspraak bevestigd! Je ontvangt een bevestiging per e-mail.')
+      setStatus('✅ Afspraak bevestigd! Je ontvangt zo een bevestiging per e-mail.')
       e.currentTarget.reset()
+      // Refresh busy list
+      fetch(`${API_BASE}/api/appointments`).then(r => r.json()).then((list) => {
+        const items = list.map(a => {
+          const start = new Date(a.start)
+          const end = new Date(a.end)
+          return `${start.toLocaleString()} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+        })
+        setBusy(items)
+      }).catch(() => {})
     } catch (e) {
       setStatus('❌ Er ging iets mis. Probeer het opnieuw.')
     }

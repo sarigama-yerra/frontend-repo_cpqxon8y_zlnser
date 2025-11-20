@@ -163,7 +163,7 @@ export function CTA() {
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
         <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="text-3xl font-bold mb-4">Klaar voor meer leads?</motion.h2>
-        <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.1, duration: 0.5 }} className="text-blue-100 mb-6">Plan een vrijblijvende call van 15 minuten. We denken graag mee.</motion.p>
+        <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.1, duration: 0.5 }} className="text-blue-100 mb-6">Plan een vrijblijvende call van 30 minuten. We denken graag mee.</motion.p>
         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
           <Link to="/afspraak" className="inline-flex items-center justify-center px-6 py-3 rounded-md bg-amber-400 text-blue-900 font-bold hover:bg-amber-300 transition-colors">
             <Calendar className="mr-2" size={18} /> Plan een afspraak
@@ -351,14 +351,15 @@ export function AppointmentPage({ onSubmit, busySlots = [] }) {
     <div className="bg-blue-950 min-h-screen text-blue-100">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h1 className="text-4xl font-bold text-white mb-2">Plan een afspraak</h1>
-        <p className="text-blue-200/90 mb-8">Kies een dag en tijd. We plannen een videocall van 15–30 minuten. Je ontvangt direct een bevestiging per e-mail.</p>
+        <p className="text-blue-200/90 mb-4">Beschikbaar: maandag t/m vrijdag, 10:00–17:00. Afspraken duren 30 minuten met 15 minuten buffer. Maximaal 2 gelijktijdige afspraken.</p>
+        <p className="text-blue-300 text-sm mb-8">Tip: kies een starttijd op het halve uur (bijv. 10:00, 10:30, 11:00).</p>
 
         <form onSubmit={onSubmit} className="grid grid-cols-1 gap-5">
           <div className="grid md:grid-cols-2 gap-5">
             <motion.input whileFocus={{ scale: 1.01 }} name="name" placeholder="Naam" className="px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white placeholder-blue-300" required />
             <motion.input whileFocus={{ scale: 1.01 }} type="email" name="email" placeholder="E-mail" className="px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white placeholder-blue-300" required />
           </div>
-          <motion.input whileFocus={{ scale: 1.01 }} name="phone" placeholder="Telefoon (optioneel)" className="px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white placeholder-blue-300" />
+          <motion.input whileFocus={{ scale: 1.01 }} name="phone" placeholder="Telefoon (verplicht)" className="px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white placeholder-blue-300" required />
 
           <div className="grid md:grid-cols-3 gap-5">
             <div>
@@ -367,14 +368,12 @@ export function AppointmentPage({ onSubmit, busySlots = [] }) {
             </div>
             <div>
               <label className="block text-sm text-blue-300 mb-1">Starttijd</label>
-              <motion.input whileFocus={{ scale: 1.01 }} type="time" name="time" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white" required />
+              <motion.input whileFocus={{ scale: 1.01 }} type="time" name="time" min="10:00" max="17:00" step="1800" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white" required />
             </div>
             <div>
               <label className="block text-sm text-blue-300 mb-1">Duur</label>
-              <select name="duration" defaultValue="30" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white">
-                <option value="15">15 min</option>
+              <select name="duration" defaultValue="30" className="w-full px-4 py-3 rounded border border-blue-800 bg-blue-900/40 text-white" disabled>
                 <option value="30">30 min</option>
-                <option value="45">45 min</option>
               </select>
             </div>
           </div>
